@@ -8,9 +8,27 @@ class App extends Component {
     this.state = { 
       name: '',
       email: '',
-      image: null
+      image: null,
+      users: []
 
      }
+  }
+
+  componentDidMount() {
+    this.getData()
+    
+  }
+
+  getData = () => {
+
+    axios.get('http://localhost:3001/api/users')
+    .then(res => {
+      this.setState(prevState => {
+        this.setState({ users: res.data.users})
+      })
+    })
+    .catch(err => console.log(err))
+
   }
 
   handleChange = e => {
@@ -32,10 +50,18 @@ class App extends Component {
       'Content-Type' : 'multipart/form-data'
     }
   })
-  .then(res => console.log(res.data.user))
+  .then(res => {
+    this.getData()
+  })
   .catch(err => console.log(err))
   }
 
+  handleDelete = id => {
+    axios.delete(`http://localhost:3001/api/users/${id}`)
+      .then(() => this.getData())
+      .catch(err => console.log(err))
+
+  }
   
 
   render() { 
@@ -45,6 +71,15 @@ class App extends Component {
         <input type="email" name="email" onChange={this.handleChange} value={this.state.email}/>
         <input type="file" name="image" onChange={this.handleImageChange}/>
         <button onClick={this.handleOnSubmit}>submit</button>
+
+        {this.state.users.map((user, i) =>(
+          <div key={i}>
+              <p> nama gw : {user.name} </p>
+              <p> email : {user.email} </p>
+              <img src={`https://albetmonmon.s3.amazonaws.com/${user.image}`} />
+              <button onClick={() => this.handleDelete(user.id)}> Delete </button>
+          </div>
+        ) )}
       </div>
      );
   }
